@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎓 Online Office & Test Platform</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',Tahoma,sans-serif; background:#0f0f1a; color:#e0e0e0; }
+
+  /* NAV */
+  nav { background:linear-gradient(135deg,#1a1a2e,#16213e); padding:15px 30px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; border-bottom:2px solid #0f3460; position:sticky; top:0; z-index:1000; }
+  nav .logo { font-size:22px; font-weight:bold; color:#e94560; margin-right:20px; }
+  nav button { background:#0f3460; color:#e0e0e0; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-size:14px; transition:0.3s; }
+  nav button:hover, nav button.active { background:#e94560; color:#fff; }
+
+  .page { display:none; padding:30px; max-width:1200px; margin:auto; }
+  .page.active { display:block; }
+
+  /* HOME */
+  .home-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:25px; margin-top:30px; }
+  .card { background:linear-gradient(145deg,#1a1a2e,#16213e); border:1px solid #0f3460; border-radius:15px; padding:30px; text-align:center; transition:0.3s; cursor:pointer; }
+  .card:hover { transform:translateY(-5px); border-color:#e94560; box-shadow:0 10px 30px rgba(233,69,96,0.2); }
+  .card .icon { font-size:60px; margin-bottom:15px; }
+  .card h3 { color:#e94560; margin-bottom:10px; font-size:22px; }
+  .card p { color:#8892b0; font-size:14px; }
+
+  /* WORD */
+  .toolbar { background:#16213e; padding:10px; border-radius:10px; margin-bottom:15px; display:flex; gap:8px; flex-wrap:wrap; }
+  .toolbar button { background:#0f3460; color:#fff; border:none; padding:8px 12px; border-radius:5px; cursor:pointer; font-size:13px; transition:0.2s; }
+  .toolbar button:hover { background:#e94560; }
+  #wordEditor { background:#1a1a2e; border:1px solid #0f3460; border-radius:10px; padding:25px; min-height:500px; font-size:16px; line-height:1.8; outline:none; color:#e0e0e0; }
+  .word-status { background:#16213e; padding:8px 15px; border-radius:8px; margin-top:10px; font-size:13px; color:#8892b0; display:flex; justify-content:space-between; }
+
+  /* EXCEL */
+  .excel-container { overflow-x:auto; background:#1a1a2e; border-radius:10px; border:1px solid #0f3460; }
+  table.excel { border-collapse:collapse; width:100%; }
+  table.excel th { background:#0f3460; color:#fff; padding:8px; font-size:13px; position:sticky; top:0; min-width:100px; }
+  table.excel td { border:1px solid #0f3460; padding:0; }
+  table.excel td input { width:100%; height:35px; background:transparent; border:none; color:#e0e0e0; padding:5px 8px; font-size:14px; outline:none; }
+  table.excel td input:focus { background:#0f3460; }
+  table.excel th.row-header { background:#e94560; min-width:40px; width:40px; text-align:center; }
+  .excel-toolbar { background:#16213e; padding:10px; border-radius:10px; margin-bottom:15px; display:flex; gap:8px; }
+  .excel-toolbar button { background:#0f3460; color:#fff; border:none; padding:8px 12px; border-radius:5px; cursor:pointer; font-size:13px; }
+  .excel-toolbar button:hover { background:#e94560; }
+
+  /* TEST */
+  .test-nav { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+  .test-nav button { padding:12px 24px; border-radius:10px; border:none; cursor:pointer; font-size:15px; font-weight:bold; transition:0.3s; }
+  .test-html { background:#e44d26; color:#fff; }
+  .test-css { background:#264de4; color:#fff; }
+  .test-js { background:#f7df1e; color:#000; }
+  .test-nav button:hover { transform:scale(1.05); }
+  .test-nav button.active-test { box-shadow:0 0 15px rgba(255,255,255,0.5); }
+
+  .question-box { background:#16213e; border-radius:15px; padding:25px; margin-bottom:15px; border:1px solid #0f3460; }
+  .question-box h3 { color:#e94560; margin-bottom:15px; font-size:16px; }
+  .options { display:flex; flex-direction:column; gap:8px; }
+  .option-label { background:#1a1a2e; padding:12px 15px; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.2s; border:1px solid #0f3460; }
+  .option-label:hover { border-color:#e94560; }
+  .option-label input[type="radio"] { accent-color:#e94560; }
+  .option-label.correct { border-color:#00ff88; background:rgba(0,255,136,0.1); }
+  .option-label.wrong { border-color:#ff4444; background:rgba(255,68,68,0.1); }
+
+  .test-controls { display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; }
+  .btn-primary { background:#e94560; color:#fff; border:none; padding:12px 30px; border-radius:10px; cursor:pointer; font-size:15px; font-weight:bold; }
+  .btn-secondary { background:#0f3460; color:#fff; border:none; padding:12px 30px; border-radius:10px; cursor:pointer; font-size:15px; }
+  .btn-primary:hover { background:#ff6b81; }
+
+  .progress-bar { background:#0f3460; border-radius:10px; height:20px; margin-bottom:20px; overflow:hidden; }
+  .progress-fill { background:linear-gradient(90deg,#e94560,#ff6b81); height:100%; border-radius:10px; transition:width 0.5s; display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff; }
+
+  /* RESULT */
+  .result-box { background:linear-gradient(145deg,#16213e,#1a1a2e); border-radius:20px; padding:40px; text-align:center; border:2px solid #0f3460; margin-top:20px; }
+  .result-box .score { font-size:80px; font-weight:bold; }
+  .result-box .score.pass { color:#00ff88; }
+  .result-box .score.fail { color:#ff4444; }
+  .result-box p { color:#8892b0; margin:10px 0; font-size:16px; }
+
+  /* CERTIFICATE */
+  .cert-form { background:#16213e; border-radius:15px; padding:30px; max-width:500px; margin:20px auto; border:1px solid #0f3460; }
+  .cert-form input { width:100%; padding:12px; border-radius:8px; border:1px solid #0f3460; background:#1a1a2e; color:#e0e0e0; font-size:16px; margin:10px 0; }
+  .cert-form input:focus { outline:none; border-color:#e94560; }
+
+  #certificate { display:none; background:linear-gradient(145deg,#fffaf0,#fff); color:#333; border-radius:0; padding:0; max-width:800px; margin:20px auto; position:relative; overflow:hidden; }
+  .cert-border { border:8px solid #b8860b; padding:40px; margin:15px; position:relative; }
+  .cert-border::before { content:''; position:absolute; top:5px; left:5px; right:5px; bottom:5px; border:3px solid #daa520; pointer-events:none; }
+  .cert-header { text-align:center; margin-bottom:20px; }
+  .cert-header h1 { font-size:36px; color:#b8860b; font-family:'Georgia',serif; }
+  .cert-header p { font-size:14px; color:#888; }
+  .cert-body { text-align:center; padding:20px 0; }
+  .cert-body .cert-title { font-size:20px; color:#555; margin-bottom:10px; }
+  .cert-body .cert-name { font-size:42px; font-family:'Georgia',serif; color:#b8860b; border-bottom:2px solid #b8860b; display:inline-block; padding:0 30px 10px; margin:15px 0; }
+  .cert-body .cert-desc { font-size:16px; color:#666; margin:15px 0; }
+  .cert-footer { display:flex; justify-content:space-between; align-items:flex-end; margin-top:30px; padding-top:20px; border-top:1px solid #daa520; }
+  .cert-footer .sign { text-align:center; }
+  .cert-footer .sign .line { border-top:1px solid #333; width:200px; margin:5px auto; }
+  .cert-footer .sign p { font-size:13px; color:#555; }
+  .cert-score { background:#b8860b; color:#fff; display:inline-block; padding:5px 20px; border-radius:20px; font-size:16px; font-weight:bold; }
+  .cert-watermark { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:150px; color:rgba(184,134,11,0.05); font-family:'Georgia',serif; pointer-events:none; }
+
+  .download-btns { display:flex; gap:10px; justify-content:center; margin-top:20px; flex-wrap:wrap; }
+
+  /* RESPONSIVE */
+  @media(max-width:768px) {
+    nav { padding:10px 15px; }
+    nav button { padding:8px 12px; font-size:12px; }
+    .page { padding:15px; }
+    .cert-body .cert-name { font-size:28px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav>
+  <div class="logo">📝 OfficeTest.uz</div>
+  <button onclick="showPage('home')" class="active" id="nav-home">🏠 Bosh sahifa</button>
+  <button onclick="showPage('word')" id="nav-word">📄 Word Online</button>
+  <button onclick="showPage('excel')" id="nav-excel">📊 Excel Online</button>
+  <button onclick="showPage('test')" id="nav-test">📝 Testlar</button>
+  <button onclick="showPage('cert')" id="nav-cert">🏆 Sertifikat</button>
+</nav>
+
+<!-- HOME PAGE -->
+<div id="home" class="page active">
+  <h1 style="color:#e94560;margin-bottom:10px;">👋 Xush kelibsiz!</h1>
+  <p style="color:#8892b0;">Online ofis va test platformasi — hamma narsa bir joyda!</p>
+  <div class="home-grid">
+    <div class="card" onclick="showPage('word')">
+      <div class="icon">📄</div>
+      <h3>Word Online</h3>
+      <p>Matn hujjatlari yarating va tahrirlang. Formatlash, eksport qilish imkoniyatlari.</p>
+    </div>
+    <div class="card" onclick="showPage('excel')">
+      <div class="icon">📊</div>
+      <h3>Excel Online</h3>
+      <p>Jadvallar yarating, ma'lumotlarni kiriting va eksport qiling.</p>
+    </div>
+    <div class="card" onclick="showPage('test')">
+      <div class="icon">📝</div>
+      <h3>Testlar (150 ta)</h3>
+      <p>HTML (50), CSS (50), JavaScript (50) — bilimlaringizni sinang!</p>
+    </div>
+    <div class="card" onclick="showPage('cert')">
+      <div class="icon">🏆</div>
+      <h3>Sertifikat</h3>
+      <p>60+ ball to'plaganlarga BEPUL sertifikat beriladi!</p>
+    </div>
+  </div>
+</div>
+
+<!-- WORD PAGE -->
+<div id="word" class="page">
+  <h2 style="color:#e94560;margin-bottom:20px;">📄 Word Online</h2>
+  <div class="toolbar">
+    <button onclick="wordCmd('bold')"><b>B</b></button>
+    <button onclick="wordCmd('italic')"><i>I</i></button>
+    <button onclick="wordCmd('underline')"><u>U</u></button>
+    <button onclick="wordCmd('strikeThrough')"><s>S</s></button>
+    <button onclick="wordCmd('justifyLeft')">⬅️</button>
+    <button onclick="wordCmd('justifyCenter')">⬆️</button>
+    <button onclick="wordCmd('justifyRight')">➡️</button>
+    <button onclick="wordCmd('insertUnorderedList')">• Ro'yxat</button>
+    <button onclick="wordCmd('insertOrderedList')">1. Ro'yxat</button>
+    <button onclick="changeWordColor('#e94560')">🔴</button>
+    <button onclick="changeWordColor('#00ff88')">🟢</button>
+    <button onclick="changeWordColor('#4dabf7')">🔵</button>
+    <button onclick="changeWordColor('#e0e0e0')">⚪</button>
+    <button onclick="changeWordSize('3')">H3</button>
+    <button onclick="changeWordSize('5')">H1</button>
+    <button onclick="changeWordSize('2')">H4</button>
+    <button onclick="downloadWord()">💾 Saqlash (HTML)</button>
+    <button onclick="printWord()">🖨️ Chop etish</button>
+  </div>
+  <div id="wordEditor" contenteditable="true">
+    <p>Bu yerga matn yozing...</p>
+  </div>
+  <div class="word-status">
+    <span id="wordCount">So'zlar: 0</span>
+    <span id="charCount">Belgilar: 0</span>
+  </div>
+</div>
+
+<!-- EXCEL PAGE -->
+<div id="excel" class="page">
+  <h2 style="color:#e94560;margin-bottom:20px;">📊 Excel Online</h2>
+  <div class="excel-toolbar">
+    <button onclick="addExcelRow()">➕ Qator qo'shish</button>
+    <button onclick="addExcelCol()">➕ Ustun qo'shish</button>
+    <button onclick="downloadExcel()">💾 Saqlash (CSV)</button>
+    <button onclick="clearExcel()">🗑️ Tozalash</button>
+  </div>
+  <div class="excel-container">
+    <table class="excel" id="excelTable"></table>
+  </div>
+</div>
+
+<!-- TEST PAGE -->
+<div id="test" class="page">
+  <h2 style="color:#e94560;margin-bottom:20px;">📝 Testlar</h2>
+
+  <div class="test-nav">
+    <button class="test-html active-test" onclick="startTest('html')">HTML (50 savol)</button>
+    <button class="test-css" onclick="startTest('css')">CSS (50 savol)</button>
+    <button class="test-js" onclick="startTest('js')">JavaScript (50 savol)</button>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width:0%">0%</div>
+  </div>
+
+  <div id="questionsContainer"></div>
+
+  <div class="test-controls">
+    <button class="btn-primary" onclick="submitTest()">✅ Natijani ko'rish</button>
+    <button class="btn-secondary" onclick="resetTest()">🔄 Qayta boshlash</button>
+  </div>
+
+  <div id="resultBox"></div>
+</div>
+
+<!-- CERTIFICATE PAGE -->
+<div id="cert" class="page">
+  <h2 style="color:#e94560;margin-bottom:10px;text-align:center;">🏆 Sertifikat olish</h2>
+  <p style="text-align:center;color:#8892b0;margin-bottom:20px;">60+ ball to'plaganingizdan so'ng, ismingizni kiriting va sertifikatni yuklab oling!</p>
+
+  <div class="cert-form" id="certForm">
+    <h3 style="color:#e94560;margin-bottom:15px;">📋 Ma'lumotlar</h3>
+    <label style="color:#8892b0;font-size:14px;">Ismingiz:</label>
+    <input type="text" id="certName" placeholder="To'liq ismingizni kiriting...">
+    <label style="color:#8892b0;font-size:14px;">Test turi:</label>
+    <input type="text" id="certTestType" placeholder="HTML / CSS / JavaScript" readonly>
+    <label style="color:#8892b0;font-size:14px;">Ball:</label>
+    <input type="text" id="certScore" placeholder="60+" readonly>
+    <button class="btn-primary" onclick="generateCertificate()" style="width:100%;margin-top:15px;">🎓 Sertifikat yaratish</button>
+  </div>
+
+  <div id="certificate">
+    <div class="cert-border">
+      <div class="cert-watermark">CERT</div>
+      <div class="cert-header">
+        <h1>📜 CERTIFICATE</h1>
+        <p>Muvaffaqiyatli yakunlanganlik sertifikati</p>
+      </div>
+      <div class="cert-body">
+        <p class="cert-title">Ushbu sertifikat berildi:</p>
+        <div class="cert-name" id="certDisplayName">Ism Familiya</div>
+        <p class="cert-desc" id="certDesc">HTML/CSS/JavaScript testlarini muvaffaqiyatli yakunlaganligi uchun</p>
+        <div class="cert-score" id="certDisplayScore">60 / 100</div>
+      </div>
+      <div class="cert-footer">
+        <div class="sign">
+          <div class="line"></div>
+          <p id="certDate">Sana</p>
+        </div>
+        <div style="text-align:center;">
+          <p style="font-size:40px;">🎓</p>
+          <p style="color:#b8860b;font-size:12px;">OfficeTest.uz</p>
+        </div>
+        <div class="sign">
+          <div class="line"></div>
+          <p>Imzo</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="download-btns" id="downloadBtns" style="display:none;">
+    <button class="btn-primary" onclick="downloadCertAsImage()">🖼️ PNG yuklab olish</button>
+    <button class="btn-secondary" onclick="printCert()">🖨️ Chop etish</button>
+  </div>
+</div>
+
+<script>
+// ============ NAVIGATION ============
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  const navBtn = document.getElementById('nav-' + id);
+  if(navBtn) navBtn.classList.add('active');
+}
+
+// ============ WORD EDITOR ============
+function wordCmd(cmd) { document.execCommand(cmd, false, null); }
+function changeWordColor(c) { document.execCommand('foreColor', false, c); }
+function changeWordSize(s) { document.execCommand('fontSize', false, s); }
+
+const wordEditor = document.getElementById('wordEditor');
+wordEditor.addEventListener('input', () => {
+  const text = wordEditor.innerText || '';
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+  document.getElementById('wordCount').textContent = 'So\'zlar: ' + words;
+  document.getElementById('charCount').textContent = 'Belgilar: ' + text.length;
+});
+
+function downloadWord() {
+  const content = document.getElementById('wordEditor').innerHTML;
+  const blob = new Blob(['<html><head><meta charset="utf-8"><title>Document</title></head><body>' + content + '</body></html>'], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'document.html';
+  a.click();
+}
+
+function printWord() {
+  const content = document.getElementById('wordEditor').innerHTML;
+  const w = window.open('','','width=800,height=600');
+  w.document.write('<html><head><title>Print</title></head><body>' + content + '</body></html>');
+  w.document.close();
+  w.print();
+}
+
+// ============ EXCEL ============
+let excelRows = 20, excelCols = 10;
+
+function buildExcel() {
+  const t = document.getElementById('excelTable');
+  t.innerHTML = '';
+  let header = '<tr><th class="row-header"></th>';
+  for(let c = 0; c < excelCols; c++) header += '<th>' + String.fromCharCode(65 + c) + '</th>';
+  header += '</tr>';
+  t.innerHTML = header;
+  for(let r = 0; r < excelRows; r++) {
+    let row = '<tr><th class="row-header">' + (r + 1) + '</th>';
+    for(let c = 0; c < excelCols; c++) {
+      row += '<td><input type="text" data-r="'+r+'" data-c="'+c+'" oninput="excelCalc(this)"></td>';
+    }
+    row += '</tr>';
+    t.innerHTML += row;
+  }
+}
+
+function excelCalc(el) {
+  const v = el.value.trim();
+  if(v.startsWith('=')) {
+    try {
+      const expr = v.substring(1);
+      // Support: =A1+B2, =SUM(A1:A5), =AVG(A1:A5)
+      let calc = expr.toUpperCase();
+      // Handle SUM
+      const sumMatch = calc.match(/SUM\(([A-Z])(\d+):([A-Z])(\d+)\)/);
+      if(sumMatch) {
+        let sum = 0;
+        for(let r = parseInt(sumMatch[2]); r <= parseInt(sumMatch[4]); r++) {
+          for(let c = sumMatch[1].charCodeAt(0); c <= sumMatch[3].charCodeAt(0); c++) {
+            const inp = document.querySelector(`input[data-r="${r-1}"][data-c="${c-65}"]`);
+            if(inp && inp.value) sum += parseFloat(inp.value) || 0;
+          }
+        }
+        el.value = sum;
+        return;
+      }
+      // Handle AVG
+      const avgMatch = calc.match(/AVG\(([A-Z])(\d+):([A-Z])(\d+)\)/);
+      if(avgMatch) {
+        let sum = 0, count = 0;
+        for(let r = parseInt(avgMatch[2]); r <= parseInt(avgMatch[4]); r++) {
+          for(let c = avgMatch[1].charCodeAt(0); c <= avgMatch[3].charCodeAt(0); c++) {
+            const inp = document.querySelector(`input[data-r="${r-1}"][data-c="${c-65}"]`);
+            if(inp && inp.value) { sum += parseFloat(inp.value) || 0; count++; }
+          }
+        }
+        el.value = count > 0 ? (sum / count).toFixed(2) : 0;
+        return;
+      }
+      // Simple cell references: =A1+B2
+      let evalExpr = expr.replace(/([A-Z])(\d+)/g, (m, col, row) => {
+        const inp = document.querySelector(`input[data-r="${parseInt(row)-1}"][data-c="${col.charCodeAt(0)-65}"]`);
+        return inp ? (parseFloat(inp.value) || 0) : 0;
+      });
+      el.value = eval(evalExpr);
+    } catch(e) { el.value = 'Xato'; }
+  }
+}
+
+function addExcelRow() { excelRows++; buildExcel(); }
+function addExcelCol() { if(excelCols < 26) { excelCols++; buildExcel(); } }
+function clearExcel() { if(confirm('Hammasini tozalashmi?')) buildExcel(); }
+
+function downloadExcel() {
+  const inputs = document.querySelectorAll('#excelTable input');
+  let csv = '';
+  let maxR = 0, maxC = 0;
+  inputs.forEach(inp => {
+    const r = parseInt(inp.dataset.r), c = parseInt(inp.dataset.c);
+    if(r > maxR) maxR = r;
+    if(c > maxC) maxC = c;
+  });
+  let grid = [];
+  for(let r = 0; r <= maxR; r++) {
+    grid[r] = [];
+    for(let c = 0; c <= maxC; c++) {
+      const inp = document.querySelector(`input[data-r="${r}"][data-c="${c}"]`);
+      grid[r][c] = inp ? '"' + inp.value.replace(/"/g,'""') + '"' : '';
+    }
+  }
+  csv = grid.map(row => row.join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'spreadsheet.csv';
+  a.click();
+}
+
+buildExcel();
+
+// ============ TESTS (150 questions) ============
+const tests = {
+html: [
+  {q:"HTML nima?",o:["HyperText Markup Language","High Tech Modern Language","Hyper Transfer Markup Language","Home Tool Markup Language"],a:0},
+  {q:"HTML hujjatining asosiy qismi qaysi teg bilan boshlanadi?",o:["<html>","<head>","<body>","<doctype>"],a:0},
+  {q:"HTML sahifasining sarlavhasi qayerda yoziladi?",o:["<head>","<body>","<footer>","<main>"],a:0},
+  {q:"Rasm qo'shish uchun qaysi teg ishlatiladi?",o:["<img>","<picture>","<photo>","<image>"],a:0},
+  {q:"Havola (link) yaratish uchun qaysi teg?",o:["<a>","<link>","<href>","<url>"],a:0},
+  {q:"Eng katta sarlavha tegi qaysi?",o:["<h1>","<h6>","<header>","<head>"],a:0},
+  {q:"Paragraf tegi qaysi?",o:["<p>","<para>","<paragraph>","<text>"],a:0},
+  {q:"Qalin (bold) matn uchun teg?",o:["<strong>","<bold>","<bld>","<thick>"],a:0},
+  {q:"Qiyshiq (italic) matn uchun teg?",o:["<em>","<italic>","<i>","<slant>"],a:0},
+  {q:"Ro'yxat (list) yaratish uchun teg?",o:["<ul>","<list>","<ol>","<li>"],a:0},
+  {q:"Jadval (table) yaratish uchun teg?",o:["<table>","<grid>","<tab>","<sheet>"],a:0},
+  {q:"Jadval qatori (row) uchun teg?",o:["<tr>","<td>","<th>","<row>"],a:0},
+  {q:"Jadval katakchasi (cell) uchun teg?",o:["<td>","<th>","<cell>","<data>"],a:0},
+  {q:"Forma (form) yaratish uchun teg?",o:["<form>","<input>","<field>","<dataform>"],a:0},
+  {q:"Matn kiritish maydoni uchun teg?",o:["<input>","<textfield>","<entry>","<box>"],a:0},
+  {q:"Tugma (button) yaratish uchun teg?",o:["<button>","<btn>","<click>","<submit>"],a:0},
+  {q:"Sahifaga video qo'shish uchun teg?",o:["<video>","<movie>","<media>","<play>"],a:0},
+  {q:"Sahifaga audio qo'shish uchun teg?",o:["<audio>","<sound>","<music>","<mp3>"],a:0},
+  {q:"HTML5 da semantik teg qaysi?",o:["<article>","<div>","<span>","<font>"],a:0},
+  {q:"HTML hujjatining turi (DOCTYPE) qanday yoziladi?",o:["<!DOCTYPE html>","<html5>","<doctype>","<!HTML5>"],a:0},
+  {q:"Meta teg qayerda joylashadi?",o:["<head>","<body>","<footer>","<main>"],a:0},
+  {q:"CSS faylni ulash uchun qaysi teg?",o:["<link>","<style>","<css>","<script>"],a:0},
+  {q:"JavaScript faylni ulash uchun teg?",o:["<script>","<js>","<javascript>","<code>"],a:0},
+  {q:"Satr ko'chirish (line break) uchun teg?",o:["<br>","<lb>","<break>","<newline>"],a:0},
+  {q:"Gorizontal chiziq uchun teg?",o:["<hr>","<line>","<hline>","<rule>"],a:0},
+  {q:"Block element qaysi?",o:["<div>","<span>","<a>","<em>"],a:0},
+  {q:"Inline element qaysi?",o:["<span>","<div>","<p>","<section>"],a:0},
+  {q:"HTML da izoh (comment) qanday yoziladi?",o:["<!-- izoh -->","// izoh","/* izoh */","# izoh"],a:0},
+  {q:"Checkbox input turi qanday?",o:["<input type='checkbox'>","<input type='check'>","<input type='box'>","<checkbox>"],a:0},
+  {q:"Radio tugma turi qanday?",o:["<input type='radio'>","<input type='select'>","<input type='option'>","<radio>"],a:0},
+  {q:"Email kiritish uchun input turi?",o:["<input type='email'>","<input type='mail'>","<input type='text'>","<email>"],a:0},
+  {q:"Password kiritish uchun input turi?",o:["<input type='password'>","<input type='secret'>","<input type='hidden'>","<pass>"],a:0},
+  {q:"Select (dropdown) elementi qaysi teg?",o:["<select>","<dropdown>","<list>","<menu>"],a:0},
+  {q:"Select ichidagi variant tegi?",o:["<option>","<item>","<value>","<choice>"],a:0},
+  {q:"Textarea tegi nima uchun?",o:["Ko'p satrli matn","Bir satrli matn","Rasm","Havola"],a:0},
+  {q:"HTML5 da navitatsiya tegi?",o:["<nav>","<navigation>","<menu>","<links>"],a:0},
+  {q:"HTML5 da footer tegi nima uchun?",o:["Pastki qism","Yuqori qism","O'rta qism","Yon panel"],a:0},
+  {q:"HTML5 da header tegi nima uchun?",o:["Yuqori qism","Pastki qism","O'rta qism","Asosiy qism"],a:0},
+  {q:"HTML5 da main tegi nima uchun?",o:["Asosiy kontent","Yon panel","Pastki qism","Sarlavha"],a:0},
+  {q:"HTML5 da section tegi nima?",o:["Bo'lim","Jadval","Forma","Ro'yxat"],a:0},
+  {q:"HTML5 da aside tegi nima?",o:["Yon panel","Asosiy qism","Pastki qism","Yuqori qism"],a:0},
+  {q:"HTML5 da figure tegi nima uchun?",o:["Rasm + izoh","Faqat rasm","Video","Audio"],a:0},
+  {q:"iframe nima uchun ishlatiladi?",o:["Boshqa sahifani joylashtirish","Rasm qo'shish","Forma yaratish","Stil berish"],a:0},
+  {q:"HTML atribut nima?",o:["Elementga qo'shimcha ma'lumot","CSS uslub","JavaScript kod","Server so'rovi"],a:0},
+  {q:"href atributi nima uchun?",o:["Havola manzili","Rasm manzili","Rang","O'lcham"],a:0},
+  {q:"src atributi nima uchun?",o:["Manba (rasm/video)","Havola","ID","Class"],a:0},
+  {q:"alt atributi nima uchun?",o:["Rasm muqobil matni","Havola","Rang","Shrift"],a:0},
+  {q:"id atributi nima uchun?",o:["Noyob identifikator","Guruhlash","Havola","Rasm"],a:0},
+  {q:"class atributi nima uchun?",o:["Elementlarni guruhlash","Noyob ID","Havola","Rasm"],a:0},
+  {q:"HTML da rang qanday ko'rsatiladi?",o:["Hex kod yoki nom","Faqat son","Faqat harf","Faqat RGB"],a:0}
+],
+css: [
+  {q:"CSS nima?",o:["Cascading Style Sheets","Computer Style Sheets","Creative Style Sheets","Colorful Style Sheets"],a:0},
+  {q:"CSS da rang qanday o'zgartiriladi?",o:["color","font-color","text-color","bg-color"],a:0},
+  {q:"CSS da fon rangi qanday o'zgartiriladi?",o:["background-color","bg-color","color","background"],a:0},
+  {q:"CSS da shrift o'lchami qanday o'zgartiriladi?",o:["font-size","text-size","font-weight","size"],a:0},
+  {q:"CSS da shrift turi qanday o'zgartiriladi?",o:["font-family","font-type","text-font","font-style"],a:0},
+  {q:"CSS da element kengligi qanday belgilanadi?",o:["width","length","size","breadth"],a:0},
+  {q:"CSS da element balandligi qanday belgilanadi?",o:["height","length","size","tall"],a:0},
+  {q:"CSS da margin nima?",o:["Tashqi bo'sh joy","Ichki bo'sh joy","Chegara","O'lcham"],a:0},
+  {q:"CSS da padding nima?",o:["Ichki bo'sh joy","Tashqi bo'sh joy","Chegara","O'lcham"],a:0},
+  {q:"CSS da border nima?",o:["Chegara","Ichki bo'sh joy","Tashqi bo'sh joy","Rang"],a:0},
+  {q:"CSS da display: none nima qiladi?",o:["Elementni yashiradi","Elementni ko'rsatadi","Elementni kattalashtiradi","Elementni o'chiradi"],a:0},
+  {q:"CSS da display: flex nima qiladi?",o:["Flexbox layout yaratadi","Elementni yashiradi","Elementni block qiladi","Elementni inline qiladi"],a:0},
+  {q:"CSS da display: grid nima qiladi?",o:["Grid layout yaratadi","Elementni yashiradi","Elementni block qiladi","Elementni inline qiladi"],a:0},
+  {q:"CSS da position: absolute nima qiladi?",o:["Ota elementga nisbatan joylashtiradi","Sahifada qotib turadi","Normal oqimda","O'zgarmaydi"],a:0},
+  {q:"CSS da position: fixed nima qiladi?",o:["Sahifaga nisbatan qotib turadi","Scroll bilan harakatlanadi","Normal oqimda","Ota elementga nisbatan"],a:0},
+  {q:"CSS da position: relative nima qiladi?",o:["Normal holatidan siljitiladi","Qotib turadi","O'chiriladi","Yashiriladi"],a:0},
+  {q:"CSS da z-index nima uchun?",o:["Qatlamlarni boshqarish","Rang","O'lcham","Shrift"],a:0},
+  {q:"CSS da opacity nima uchun?",o:["Shaffoflik","Rang","O'lcham","Joylashuv"],a:0},
+  {q:"CSS da transition nima uchun?",o:["Animatsiya effekti","Rang o'zgartirish","O'lcham","Joylashuv"],a:0},
+  {q:"CSS da transform: rotate() nima qiladi?",o:["Elementni aylantiradi","Elementni kattalashtiradi","Elementni siljitadi","Elementni yashiradi"],a:0},
+  {q:"CSS da transform: scale() nima qiladi?",o:["Elementni kattalashtiradi/kichiklashtiradi","Elementni aylantiradi","Elementni siljitadi","Elementni yashiradi"],a:0},
+  {q:"CSS da transform: translate() nima qiladi?",o:["Elementni siljitadi","Elementni aylantiradi","Elementni kattalashtiradi","Elementni yashiradi"],a:0},
+  {q:"CSS da :hover nima?",o:["Sichqoncha ustiga borganda","Bosilganda","Focus bo'lganda","Yuklanganda"],a:0},
+  {q:"CSS da :focus nima?",o:["Elementga fokuslanganda","Sichqoncha ustiga borganda","Bosilganda","Yuklanganda"],a:0},
+  {q:"CSS da :active nima?",o:["Element bosilayotganda","Sichqoncha ustiga borganda","Focus bo'lganda","Yuklanganda"],a:0},
+  {q:"CSS da ::before nima?",o:["Element oldidan kontent qo'shadi","Elementdan keyin","Element o'rniga","Element ichida"],a:0},
+  {q:"CSS da ::after nima?",o:["Elementdan keyin kontent qo'shadi","Element oldidan","Element o'rniga","Element ichida"],a:0},
+  {q:"CSS da media query nima uchun?",o:["Responsive dizayn","Rang","Shrift","Animatsiya"],a:0},
+  {q:"CSS da @media (max-width: 768px) nima qiladi?",o:["768px dan kichik ekranlar uchun","768px dan katta","Faqat 768px","Barcha ekranlar"],a:0},
+  {q:"CSS da box-sizing: border-box nima qiladi?",o:["Padding va border width ichiga kiritadi","Tashqariga chiqaradi","Hech narsa","O'lchamni o'zgartiradi"],a:0},
+  {q:"CSS da overflow: hidden nima qiladi?",o:["Tashqariga chiqqan kontentni yashiradi","Ko'rsatadi","Scroll qiladi","Kattalashtiradi"],a:0},
+  {q:"CSS da overflow: auto nima qiladi?",o:["Kerak bo'lsa scroll qo'shadi","Doim scroll","Yashiradi","Ko'rsatadi"],a:0},
+  {q:"CSS da text-align: center nima qiladi?",o:["Matnni o'rtaga tekislaydi","Chapga","O'ngga","Ikki tomonga"],a:0},
+  {q:"CSS da text-decoration: none nima qiladi?",o:["Matndagi chiziqni olib tashlaydi","Qalin qiladi","Qiyshiq qiladi","Kattalashtiradi"],a:0},
+  {q:"CSS da list-style: none nima qiladi?",o:["Ro'yxat belgisini olib tashlaydi","Qo'shadi","Rangini o'zgartiradi","O'lchamini o'zgartiradi"],a:0},
+  {q:"CSS da cursor: pointer nima qiladi?",o:["Sichqonchani qo'l ko'rinishiga o'zgartiradi","Kursor","Tekst","Ko'rish"],a:0},
+  {q:"CSS da float: left nima qiladi?",o:["Elementni chapga suradi","O'ngga","O'rtaga","Pastga"],a:0},
+  {q:"CSS da clear: both nima qiladi?",o:["Float ta'sirini bekor qiladi","Rangini o'zgartiradi","O'lchamini","Joylashuvini"],a:0},
+  {q:"CSS da linear-gradient() nima?",o:["Ranglar gradienti","Matn gradienti","Shrift gradienti","Border gradienti"],a:0},
+  {q:"CSS da border-radius nima qiladi?",o:["Burchaklarni yumaloqlaydi","Rangini o'zgartiradi","O'lchamini","Joylashuvini"],a:0},
+  {q:"CSS da box-shadow nima qiladi?",o:["Elementga soya beradi","Rang","Shrift","Border"],a:0},
+  {q:"CSS da text-shadow nima qiladi?",o:["Matnga soya beradi","Elementga soya","Rang","Border"],a:0},
+  {q:"CSS da animation nima uchun?",o:["Animatsiya yaratish","Rang o'zgartirish","O'lcham","Joylashuv"],a:0},
+  {q:"CSS da @keyframes nima?",o:["Animatsiya qadamlarini belgilaydi","Rang","Shrift","Grid"],a:0},
+  {q:"CSS da flex-direction: column nima qiladi?",o:["Elementlarni ustma-ust joylaydi","Yonma-yon","Chapga","O'ngga"],a:0},
+  {q:"CSS da justify-content: center nima qiladi?",o:["Asosiy o'q bo'ylab o'rtaga tekislaydi","Boshiga","Oxiriga","Tekislab"],a:0},
+  {q:"CSS da align-items: center nima qiladi?",o:["Kesma o'q bo'ylab o'rtaga tekislaydi","Boshiga","Oxiriga","Tekislab"],a:0},
+  {q:"CSS da grid-template-columns nima?",o:["Ustunlar soni va o'lchamini belgilaydi","Qatorlar","Rang","Shrift"],a:0},
+  {q:"CSS da gap nima qiladi?",o:["Elementlar orasidagi bo'sh joy","Rang","O'lcham","Border"],a:0},
+  {q:"CSS da @import nima uchun?",o:["Boshqa CSS faylni ulash","Rang","Shrift","Animatsiya"],a:0}
+],
+js: [
+  {q:"JavaScript nima?",o:["Dasturlash tili","HTML tegi","CSS uslubi","Brauzer"],a:0},
+  {q:"JavaScript da o'zgaruvchi qanday e'lon qilinadi?",o:["let / const / var","variable","dim","int"],a:0},
+  {q:"console.log() nima qiladi?",o:["Konsolga yozadi","Ekranga chiqaradi","Fayl yaratadi","Serverga yuboradi"],a:0},
+  {q:"JavaScript da string nima?",o:["Matn qiymati","Son qiymati","Mantiqiy qiymat","Funksiya"],a:0},
+  {q:"JavaScript da number nima?",o:["Son qiymati","Matn qiymati","Mantiqiy qiymat","Funksiya"],a:0},
+  {q:"JavaScript da boolean nima?",o:["true yoki false","Son","Matn","Massiv"],a:0},
+  {q:"JavaScript da array (massiv) nima?",o:["Qiymatlar to'plami","Bitta qiymat","Funksiya","Obyekt"],a:0},
+  {q:"JavaScript da object nima?",o:["Kalit-qiymat juftlari","Faqat sonlar","Faqat matnlar","Funksiya"],a:0},
+  {q:"JavaScript da function nima?",o:["Takrorlanadigan kod bloki","O'zgaruvchi","Massiv","Obyekt"],a:0},
+  {q:"JavaScript da if sharti nima qiladi?",o:["Shart bajarilsa kodni ishga tushiradi","Doim ishga tushiradi","Hech narsa","Xatolik beradi"],a:0},
+  {q:"JavaScript da for loop nima qiladi?",o:["Ma'lum marta takrorlaydi","Bir marta ishlaydi","Xatolik","Funksiya"],a:0},
+  {q:"JavaScript da while loop nima qiladi?",o:["Shart to'g'ri bo'lsa takrorlaydi","Bir marta","Hech narsa","Xatolik"],a:0},
+  {q:"JavaScript da === operatori nima?",o:["Qiymat va tip tengligi","Faqat qiymat","Faqat tip","Teng emas"],a:0},
+  {q:"JavaScript da == operatori nima?",o:["Qiymat tengligi (tip o'zgaradi)","Tip va qiymat","Teng emas","Katta"],a:0},
+  {q:"JavaScript da += operatori nima?",o:["Qo'shib yozadi","Ayiradi","Ko'paytiradi","Bo'ladi"],a:0},
+  {q:"JavaScript da push() nima qiladi?",o:["Massiv oxiriga element qo'shadi","Boshiga","O'chiradi","Qaytaradi"],a:0},
+  {q:"JavaScript da pop() nima qiladi?",o:["Massiv oxiridan element oladi","Boshiga qo'shadi","O'chiradi","Qaytaradi"],a:0},
+  {q:"JavaScript da shift() nima qiladi?",o:["Massiv boshidan element oladi","Oxiriga qo'shadi","O'chiradi","Qaytaradi"],a:0},
+  {q:"JavaScript da unshift() nima qiladi?",o:["Massiv boshiga element qo'shadi","Oxiriga","O'chiradi","Qaytaradi"],a:0},
+  {q:"JavaScript da map() nima qiladi?",o:["Har bir elementni o'zgartirib yangi massiv qaytaradi","Element qo'shadi","Element o'chiradi","Filter qiladi"],a:0},
+  {q:"JavaScript da filter() nima qiladi?",o:["Shartga mos elementlarni qaytaradi","Hammasini o'zgartiradi","Qo'shadi","O'chiradi"],a:0},
+  {q:"JavaScript da find() nima qiladi?",o:["Birinchi mos elementni qaytaradi","Hammasini","Indeksni","Yangi massiv"],a:0},
+  {q:"JavaScript da forEach() nima qiladi?",o:["Har bir element uchun funksiya ishlatadi","Yangi massiv qaytaradi","Filter qiladi","Topadi"],a:0},
+  {q:"JavaScript da reduce() nima qiladi?",o:["Massivni bitta qiymatga qisqartiradi","Yangi massiv","Filter","Find"],a:0},
+  {q:"JavaScript da indexOf() nima qiladi?",o:["Element indeksini qaytaradi","Element qo'shadi","Element o'chiradi","Massiv uzunligi"],a:0},
+  {q:"JavaScript da length xossasi nima?",o:["Massiv/matn uzunligi","Birinchi element","Oxirgi element","Indeks"],a:0},
+  {q:"JavaScript da typeof operatori nima?",o:["Ma'lumot turini qaytaradi","Qiymatni","Indeksni","Uzunlikni"],a:0},
+  {q:"JavaScript da null nima?",o:["Qiymat yo'qligi","Nol","Bo'sh massiv","Xatolik"],a:0},
+  {q:"JavaScript da undefined nima?",o:["E'lon qilingan lekin qiymat berilmagan","Nol","Bo'sh","Xatolik"],a:0},
+  {q:"JavaScript da NaN nima?",o:["Son emas (Not a Number)","Nol","Bo'sh","Undefined"],a:0},
+  {q:"JavaScript da try...catch nima?",o:["Xatoliklarni ushlash","Loop","Funksiya","O'zgaruvchi"],a:0},
+  {q:"JavaScript da setTimeout() nima qiladi?",o:["Ma'lum vaqtdan keyin kod ishlatadi","Darhol","Loop","Xatolik"],a:0},
+  {q:"JavaScript da setInterval() nima qiladi?",o:["Ma'lum vaqt oralig'ida takrorlaydi","Bir marta","To'xtatadi","Xatolik"],a:0},
+  {q:"JavaScript da document.getElementById() nima?",o:["ID bo'yicha elementni topadi","Class","Teg","Nom"],a:0},
+  {q:"JavaScript da document.querySelector() nima?",o:["CSS selektor bo'yicha elementni topadi","Faqat ID","Faqat Class","Faqat Teg"],a:0},
+  {q:"JavaScript da addEventListener() nima qiladi?",o:["Hodisa (event) qo'shadi","Element yaratadi","Element o'chiradi","Style o'zgartiradi"],a:0},
+  {q:"JavaScript da DOM nima?",o:["Document Object Model","Data Object Model","Digital Object Model","Desktop Object Model"],a:0},
+  {q:"JavaScript da innerHTML nima?",o:["Element ichidagi HTML kontent","Tashqi HTML","Style","Atribut"],a:0},
+  {q:"JavaScript da textContent nima?",o:["Element ichidagi matn","HTML","Style","Atribut"],a:0},
+  {q:"JavaScript da createElement() nima qiladi?",o:["Yangi HTML element yaratadi","O'chiradi","Topadi","O'zgartiradi"],a:0},
+  {q:"JavaScript da appendChild() nima qiladi?",o:["Elementga bola element qo'shadi","O'chiradi","Topadi","O'zgartiradi"],a:0},
+  {q:"JavaScript da removeChild() nima qiladi?",o:["Bola elementni o'chiradi","Qo'shadi","Topadi","O'zgartiradi"],a:0},
+  {q:"JavaScript da classList.add() nima qiladi?",o:["Class qo'shadi","Class o'chiradi","Class o'zgartiradi","Class tekshiradi"],a:0},
+  {q:"JavaScript da classList.remove() nima qiladi?",o:["Class o'chiradi","Class qo'shadi","Class o'zgartiradi","Class tekshiradi"],a:0},
+  {q:"JavaScript da JSON.parse() nima qiladi?",o:["JSON stringni obyektga aylantiradi","Obyektni stringga","Fayl o'qiydi","Fayl yozadi"],a:0},
+  {q:"JavaScript da JSON.stringify() nima qiladi?",o:["Obyektni JSON stringga aylantiradi","Stringni obyektga","Fayl o'qiydi","Fayl yozadi"],a:0},
+  {q:"JavaScript da localStorage nima?",o:["Brauzerda doimiy ma'lumot saqlash","Vaqtinchalik","Serverda","Faylda"],a:0},
+  {q:"JavaScript da fetch() nima qiladi?",o:["HTTP so'rov yuboradi","Fayl o'chiradi","Element yaratadi","Loop"],a:0},
+  {q:"JavaScript da Promise nima?",o:["Asinxron operatsiya natijasi","O'zgaruvchi","Loop","Funksiya"],a:0},
+  {q:"JavaScript da async/await nima?",o:["Asinxron kodni sinxron yozish","Loop","O'zgaruvchi","Obyekt"],a:0}
+]
+};
+
+let currentTest = 'html';
+let userAnswers = {};
+
+function startTest(type) {
+  currentTest = type;
+  userAnswers = {};
+  document.querySelectorAll('.test-nav button').forEach(b => b.classList.remove('active-test'));
+  event.target.classList.add('active-test');
+  renderQuestions();
+  document.getElementById('resultBox').innerHTML = '';
+}
+
+function renderQuestions() {
+  const container = document.getElementById('questionsContainer');
+  const qs = tests[currentTest];
+  let html = '';
+  qs.forEach((q, i) => {
+    html += `<div class="question-box" id="q${i}">
+      <h3>${i + 1}. ${q.q}</h3>
+      <div class="options">
+        ${q.o.map((opt, j) => `
+          <label class="option-label" id="opt${i}_${j}">
+            <input type="radio" name="q${i}" value="${j}" onchange="saveAnswer(${i},${j})">
+            <span>${opt}</span>
+          </label>
+        `).join('')}
+      </div>
+    </div>`;
+  });
+  container.innerHTML = html;
+  updateProgress();
+}
+
+function saveAnswer(qi, oi) {
+  userAnswers[qi] = oi;
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = tests[currentTest].length;
+  const answered = Object.keys(userAnswers).length;
+  const pct = Math.round((answered / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressFill').textContent = pct + '%';
+}
+
+function submitTest() {
+  const qs = tests[currentTest];
+  let correct = 0;
+  const total = qs.length;
+
+  qs.forEach((q, i) => {
+    const userAns = userAnswers[i];
+    if(userAns !== undefined) {
+      if(userAns === q.a) {
+        correct++;
+        document.getElementById('opt' + i + '_' + userAns).classList.add('correct');
+      } else {
+        document.getElementById('opt' + i + '_' + userAns).classList.add('wrong');
+        document.getElementById('opt' + i + '_' + q.a).classList.add('correct');
+      }
+    } else {
+      document.getElementById('opt' + i + '_' + q.a).classList.add('correct');
+    }
+  });
+
+  const pct = Math.round((correct / total) * 100);
+  const pass = pct >= 60;
+
+  let resultHTML = `<div class="result-box">
+    <h2>${pass ? '🎉 Tabriklaymiz!' : '😔 Afsus!'}</h2>
+    <div class="score ${pass ? 'pass' : 'fail'}">${correct} / ${total}</div>
+    <p>Ball: <strong>${pct}%</strong></p>
+    <p>${pass ? 'Siz 60% dan yuqori ball to\'pladingiz! Sertifikat olishingiz mumkin!' : '60% dan past ball. Qayta urinib ko\'ring!'}</p>
+    <p style="color:#8892b0;font-size:13px;">To\'g\'ri javoblar: <span style="color:#00ff88;">🟢</span> Noto\'g\'ri javoblar: <span style="color:#ff4444;">🔴</span></p>
+  </div>`;
+  document.getElementById('resultBox').innerHTML = resultHTML;
+
+  // Save for certificate
+  localStorage.setItem('lastTestType', currentTest.toUpperCase());
+  localStorage.setItem('lastTestScore', correct + '/' + total);
+  localStorage.setItem('lastTestPass', pass);
+
+  // Update cert form
+  document.getElementById('certTestType').value = currentTest.toUpperCase() + ' Test';
+  document.getElementById('certScore').value = correct + ' / ' + total + ' (' + pct + '%)';
+}
+
+function resetTest() {
+  userAnswers = {};
+  renderQuestions();
+  document.getElementById('resultBox').innerHTML = '';
+}
+
+// ============ CERTIFICATE ============
+function generateCertificate() {
+  const name = document.getElementById('certName').value.trim();
+  const pass = localStorage.getItem('lastTestPass');
+
+  if(!name) { alert('Iltimos, ismingizni kiriting!'); return; }
+  if(pass !== 'true') { alert('Avval testni yechib 60%+ ball to\'plang!'); return; }
+
+  const type = localStorage.getItem('lastTestType');
+  const score = localStorage.getItem('lastTestScore');
+  const date = new Date().toLocaleDateString('uz-UZ');
+
+  document.getElementById('certDisplayName').textContent = name;
+  document.getElementById('certDesc').textContent = type + ' testlarini muvaffaqiyatli yakunlaganligi uchun';
+  document.getElementById('certDisplayScore').textContent = 'Ball: ' + score;
+  document.getElementById('certDate').textContent = 'Sana: ' + date;
+
+  document.getElementById('certificate').style.display = 'block';
+  document.getElementById('downloadBtns').style.display = 'flex';
+}
+
+function downloadCertAsImage() {
+  const cert = document.getElementById('certificate');
+  // Use html2canvas if available, otherwise use simple approach
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 1600;
+  canvas.height = 1130;
+
+  // Draw certificate background
+  ctx.fillStyle = '#fffaf0';
+  ctx.fillRect(0, 0, 1600, 1130);
+
+  // Draw border
+  ctx.strokeStyle = '#b8860b';
+  ctx.lineWidth = 16;
+  ctx.strokeRect(20, 20, 1560, 1090);
+  ctx.strokeStyle = '#daa520';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(40, 40, 1520, 1050);
+
+  // Title
+  ctx.fillStyle = '#b8860b';
+  ctx.font = 'bold 60px Georgia';
+  ctx.textAlign = 'center';
+  ctx.fillText('📜 SERTIFIKAT', 800, 180);
+
+  ctx.fillStyle = '#888';
+  ctx.font = '24px Georgia';
+  ctx.fillText('Muvaffaqiyatli yakunlanganlik sertifikati', 800, 230);
+
+  // Name
+  ctx.fillStyle = '#555';
+  ctx.font = '28px Georgia';
+  ctx.fillText('Ushbu sertifikat berildi:', 800, 350);
+
+  ctx.fillStyle = '#b8860b';
+  ctx.font = 'bold 56px Georgia';
+  ctx.fillText(document.getElementById('certName').value, 800, 440);
+
+  // Line under name
+  ctx.strokeStyle = '#b8860b';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(400, 470);
+  ctx.lineTo(1200, 470);
+  ctx.stroke();
+
+  // Description
+  ctx.fillStyle = '#666';
+  ctx.font = '24px Georgia';
+  ctx.fillText(document.getElementById('certDesc').textContent, 800, 540);
+
+  // Score badge
+  ctx.fillStyle = '#b8860b';
+  ctx.beginPath();
+  ctx.arc(800, 640, 80, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 24px Georgia';
+  ctx.fillText(document.getElementById('certDisplayScore').textContent, 800, 645);
+
+  // Date
+  ctx.fillStyle = '#555';
+  ctx.font = '20px Georgia';
+  ctx.fillText(document.getElementById('certDate').textContent, 300, 850);
+
+  // Signature line
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(1200, 830);
+  ctx.lineTo(1400, 830);
+  ctx.stroke();
+  ctx.fillStyle = '#555';
+  ctx.fillText('Imzo', 1300, 860);
+
+  // Download
+  const link = document.createElement('a');
+  link.download = 'sertifikat_' + document.getElementById('certName').value + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function printCert() {
+  const cert = document.getElementById('certificate');
+  const w = window.open('','','width=900,height=700');
+  w.document.write('<html><head><title>Sertifikat</title><style>body{margin:0;display:flex;justify-content:center;}</style></head><body>');
+  w.document.write(cert.innerHTML);
+  w.document.write('</body></html>');
+  w.document.close();
+  setTimeout(() => w.print(), 500);
+}
+
+// ============ INIT ============
+startTest('html');
+</script>
+</body>
+</html>
